@@ -1,0 +1,46 @@
+name: Create New User
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  create-user:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Get Last User ID
+        id: get_user_id
+        run: |
+          FILE="user_id.txt"
+          if [[ -f "$FILE" ]]; then
+            LAST_ID=$(cat $FILE)
+          else
+            LAST_ID=0
+          fi
+          NEW_ID=$((LAST_ID + 1))
+          echo "New user ID: $NEW_ID"
+          echo "$NEW_ID" > $FILE
+          echo "USER_ID=$NEW_ID" >> $GITHUB_ENV
+
+      - name: Create New User
+        run: |
+          echo "Creating new user with ID $USER_ID"
+          # Simulate user creation (replace with actual API calls or logic)
+          echo "User $USER_ID created successfully."
+
+      - name: Commit & Push Changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add user_id.txt
+          git commit -m "Update user ID to $USER_ID"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
